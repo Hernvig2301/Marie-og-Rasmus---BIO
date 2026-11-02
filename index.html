@@ -387,7 +387,7 @@
                 <span>Tilføj Ny Film</span>
             </h3>
 
-            <!-- FORM (WITHOUT RATING FIELD) -->
+            <!-- FORM WITH CUSTOM GENRE INPUT -->
             <form id="movieForm" onsubmit="saveMovieForm(event)" class="space-y-4">
                 <input type="hidden" id="formMovieId">
 
@@ -400,11 +400,17 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Kategori / Genre *</label>
-                        <select id="formCategory" class="w-full bg-brand-brownDark border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight">
+                        <select id="formCategory" onchange="toggleCustomGenreInput(this.value)" class="w-full bg-brand-brownDark border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight">
                             <option value="Danske Thrillers & Afdeling Q">Danske Thrillers & Afdeling Q</option>
                             <option value="Fantasy & Marathon">Fantasy & Marathon</option>
-                            <option value="Action & Thriller">Action & Thriller</option>
-                            <option value="Hygge & Romantik">Hygge & Romantik</option>
+                            <option value="Action & Eventyr">Action & Eventyr</option>
+                            <option value="Romantisk & Hygge">Romantisk & Hygge</option>
+                            <option value="Sci-Fi & Drama">Sci-Fi & Drama</option>
+                            <option value="Horror & Gys">Horror & Gys</option>
+                            <option value="Komedie">Komedie</option>
+                            <option value="Animation & Tegnefilm">Animation & Tegnefilm</option>
+                            <option value="Dokumentar & True Crime">Dokumentar & True Crime</option>
+                            <option value="CUSTOM">✏️ Skriv egen kategori / genre...</option>
                         </select>
                     </div>
 
@@ -413,6 +419,13 @@
                         <input type="number" id="formDuration" placeholder="120" 
                                class="w-full bg-brand-brownDark/50 border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight">
                     </div>
+                </div>
+
+                <!-- Hidden Custom Genre Input Field -->
+                <div id="customGenreWrapper" class="hidden">
+                    <label class="block text-xs font-semibold text-amber-300 uppercase mb-1">Egen Kategori / Genre Navn *</label>
+                    <input type="text" id="formCustomCategory" placeholder="f.eks. Julefilm, Marvel, Anime..." 
+                           class="w-full bg-brand-brownDark border border-amber-500/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400">
                 </div>
 
                 <div>
@@ -446,7 +459,7 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // STRICT SPECIFIED DEFAULT MOVIES LIST
+        // DEFAULT MOVIES LIST
         const DEFAULT_MOVIES = [
             // AFDELING Q & DANSKE THRILLERS
             {
@@ -720,7 +733,7 @@
         };
 
         function loadMovies() {
-            const stored = localStorage.getItem('m_and_r_movies_v4');
+            const stored = localStorage.getItem('m_and_r_movies_v5');
             if (stored) {
                 try {
                     movies = JSON.parse(stored);
@@ -739,19 +752,14 @@
         }
 
         function saveMovies() {
-            localStorage.setItem('m_and_r_movies_v4', JSON.stringify(movies));
+            localStorage.setItem('m_and_r_movies_v5', JSON.stringify(movies));
             updateStats();
         }
 
-        // RENDER ENTIRE APP
+        // RENDER ENTIRE APP DYNAMICALLY
         function renderApp() {
             const container = document.getElementById('rowsContainer');
             container.innerHTML = '';
-
-            const categories = [
-                'Danske Thrillers & Afdeling Q',
-                'Fantasy & Marathon'
-            ];
 
             let filteredMovies = movies;
             if (activeFilter === 'unwatched') {
@@ -760,18 +768,15 @@
                 filteredMovies = movies.filter(m => m.status === 'watched');
             }
 
-            categories.forEach(cat => {
+            // Extract all unique categories present in the movies array
+            const uniqueCategories = [...new Set(movies.map(m => m.category))];
+
+            uniqueCategories.forEach(cat => {
                 const catMovies = filteredMovies.filter(m => m.category === cat);
                 if (catMovies.length > 0) {
                     container.appendChild(createCategoryRow(cat, catMovies));
                 }
             });
-
-            // Other user-added categories
-            const otherMovies = filteredMovies.filter(m => !categories.includes(m.category));
-            if (otherMovies.length > 0) {
-                container.appendChild(createCategoryRow('Andre Film & Serier', otherMovies));
-            }
 
             updateStats();
         }
@@ -849,7 +854,7 @@
         // HERO SPOTLIGHT
         function setupHeroSpotlight() {
             if (movies.length === 0) return;
-            const featured = movies[0]; // Spotlight on first movie (Kvinden i Buret)
+            const featured = movies[0];
             
             document.getElementById('heroBg').style.backgroundImage = `url('${featured.poster}')`;
             document.getElementById('heroTitle').innerText = featured.title;
@@ -1089,12 +1094,25 @@
             }
         }
 
-        // ADD MOVIE FORM LOGIC (NO RATING INPUT)
+        // ADD / EDIT MOVIE FORM LOGIC WITH CUSTOM GENRE
         function openAddMovieModal() {
             document.getElementById('formModalTitle').innerText = 'Tilføj Ny Film';
             document.getElementById('movieForm').reset();
             document.getElementById('formMovieId').value = '';
+            toggleCustomGenreInput('Danske Thrillers & Afdeling Q');
             showModal('addMovieModal');
+        }
+
+        function toggleCustomGenreInput(val) {
+            const wrapper = document.getElementById('customGenreWrapper');
+            const customInput = document.getElementById('formCustomCategory');
+            if (val === 'CUSTOM') {
+                wrapper.classList.remove('hidden');
+                customInput.required = true;
+            } else {
+                wrapper.classList.add('hidden');
+                customInput.required = false;
+            }
         }
 
         function editCurrentMovie() {
@@ -1106,7 +1124,20 @@
             document.getElementById('formModalTitle').innerText = 'Rediger Film';
             document.getElementById('formMovieId').value = movie.id;
             document.getElementById('formTitle').value = movie.title;
-            document.getElementById('formCategory').value = movie.category;
+            
+            // Check if existing category is in the select dropdown list
+            const select = document.getElementById('formCategory');
+            const existsInSelect = Array.from(select.options).some(opt => opt.value === movie.category);
+
+            if (existsInSelect) {
+                select.value = movie.category;
+                toggleCustomGenreInput(movie.category);
+            } else {
+                select.value = 'CUSTOM';
+                toggleCustomGenreInput('CUSTOM');
+                document.getElementById('formCustomCategory').value = movie.category;
+            }
+
             document.getElementById('formDuration').value = movie.duration || 120;
             document.getElementById('formPoster').value = movie.poster || '';
             document.getElementById('formDesc').value = movie.description || '';
@@ -1119,7 +1150,13 @@
 
             const id = document.getElementById('formMovieId').value;
             const title = document.getElementById('formTitle').value.trim();
-            const category = document.getElementById('formCategory').value;
+            const categorySelect = document.getElementById('formCategory').value;
+            
+            let category = categorySelect;
+            if (categorySelect === 'CUSTOM') {
+                category = document.getElementById('formCustomCategory').value.trim();
+            }
+
             const duration = parseInt(document.getElementById('formDuration').value) || 120;
             let poster = document.getElementById('formPoster').value.trim();
             const description = document.getElementById('formDesc').value.trim();
