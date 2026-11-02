@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="da" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marie & Rasmus - Movie / TV Series Night</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bg: '#0f1410',
+                            card: '#1c1715',
+                            cardHover: '#2a221f',
+                            brownDark: '#3a2e2b',
+                            brownLight: '#5c4033',
+                            greenDark: '#1b3b18',
+                            green: '#2d5a27',
+                            greenLight: '#4a7c59',
+                            greenBright: '#5ca36c',
+                            accent: '#38703a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #0f1410;
+            color: #e5e7eb;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f1410;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3a2e2b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a7c59;
+        }
+
+        /* Horizontal row smooth scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Netflix Hover Effect for Movie Cards */
+        .movie-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .movie-card:hover {
+            transform: scale(1.06) translateY(-4px);
+            z-index: 20;
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7), 0 0 15px rgba(74, 124, 89, 0.4);
+        }
+
+        /* Hero Backdrop Gradient */
+        .hero-gradient {
+            background: linear-gradient(0deg, #0f1410 0%, rgba(15, 20, 16, 0.7) 50%, rgba(15, 20, 16, 0.3) 100%),
+                        linear-gradient(90deg, #0f1410 0%, rgba(15, 20, 16, 0.8) 40%, rgba(15, 20, 16, 0.1) 100%);
+        }
+
+        /* Animation Keyframes */
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 15px rgba(74, 124, 89, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(92, 163, 108, 0.8); }
+        }
+        .glow-pulse {
+            animation: pulse-green 2.5s infinite;
+        }
+
+        @keyframes shuffle-bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05) rotate(1deg); }
+        }
+        .shuffle-anim {
+            animation: shuffle-bounce 0.15s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brand-green selection:text-white">
+
+    <!-- NAVBAR -->
+    <header id="navbar" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gradient-to-b from-black/90 via-black/70 to-transparent px-4 md:px-8 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="scrollToTop()">
+                <div class="h-12 md:h-14 overflow-hidden rounded-xl border border-brand-greenLight/40 shadow-lg bg-brand-card flex items-center justify-center p-1">
+                    <img src="Gemini_Generated_Image_2ejj9u2ejj9u2ejj.jpeg" alt="Marie og Rasmus - MOVIE / TV SERIES NIGHT" class="h-full w-auto object-contain rounded-lg" onerror="this.style.display='none'; document.getElementById('fallbackTitle').classList.remove('hidden');">
+                    <div id="fallbackTitle" class="hidden flex flex-col px-3">
+                        <span class="text-xs uppercase tracking-widest text-emerald-400 font-semibold">Marie & Rasmus</span>
+                        <span class="text-base font-extrabold text-white">MOVIE / TV SERIES NIGHT</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="flex-1 max-w-xs md:max-w-md mx-2">
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Søg i Afdeling Q, Harry Potter..." 
+                           class="w-full bg-brand-brownDark/40 backdrop-blur-md text-sm text-gray-100 pl-9 pr-4 py-2 rounded-full border border-brand-brownLight/40 focus:outline-none focus:border-brand-greenLight transition-all placeholder-gray-400">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <!-- Randomizer Button -->
+                <button onclick="openRandomizerModal()" class="glow-pulse bg-gradient-to-r from-brand-green to-brand-greenLight hover:from-brand-greenLight hover:to-emerald-600 text-white font-semibold text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full shadow-lg flex items-center space-x-2 transition-all transform active:scale-95 border border-emerald-400/30">
+                    <i class="fa-solid fa-dice text-base"></i>
+                    <span class="whitespace-nowrap">Hvad skal vi se?</span>
+                </button>
+
+                <!-- Add Movie Button -->
+                <button onclick="openAddMovieModal()" class="bg-brand-brownDark/80 hover:bg-brand-brownLight text-amber-100 border border-brand-brownLight/50 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-full transition-all flex items-center space-x-2 active:scale-95">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span class="hidden sm:inline">Tilføj Film</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow pt-16">
+
+        <!-- HERO SPOTLIGHT -->
+        <section id="heroSection" class="relative w-full h-[60vh] min-h-[420px] max-h-[600px] flex items-end overflow-hidden mb-8">
+            <div id="heroBg" class="absolute inset-0 bg-cover bg-center transition-all duration-700 transform scale-105">
+                <div class="hero-gradient absolute inset-0"></div>
+            </div>
+            
+            <div class="relative max-w-7xl mx-auto px-4 sm:px-8 pb-10 w-full z-10 flex flex-col justify-end">
+                <div class="inline-flex items-center space-x-2 bg-brand-green/80 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold text-emerald-200 w-fit mb-3 border border-emerald-500/30">
+                    <i class="fa-solid fa-star text-amber-300"></i>
+                    <span>Aftenens Udvalgte Film</span>
+                </div>
+                
+                <h1 id="heroTitle" class="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tight drop-shadow-md mb-2">
+                    Indlæser film...
+                </h1>
+
+                <div class="flex items-center space-x-3 text-xs sm:text-sm text-gray-300 mb-3">
+                    <span id="heroDuration">120 min</span>
+                    <span>•</span>
+                    <span id="heroGenre" class="bg-brand-brownDark/60 px-2.5 py-0.5 rounded text-gray-200 border border-brand-brownLight/30">Genre</span>
+                    <span id="heroRatingBadge" class="hidden text-amber-400 font-bold items-center space-x-1">
+                        <span>•</span> <i class="fa-solid fa-dice-d6 ml-1"></i> <span id="heroRatingText">6/6</span>
+                    </span>
+                </div>
+
+                <p id="heroDesc" class="text-gray-300 text-xs sm:text-sm md:text-base max-w-2xl line-clamp-3 mb-6 font-light leading-relaxed">
+                    Henter beskrivelse...
+                </p>
+
+                <div class="flex items-center space-x-3">
+                    <button id="heroPlayBtn" class="bg-brand-greenLight hover:bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-lg shadow-lg flex items-center space-x-2 transition hover:scale-105">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <span>Se Detaljer</span>
+                    </button>
+                    <button id="heroWatchlistBtn" class="bg-brand-brownDark/80 hover:bg-brand-brownLight text-gray-200 border border-brand-brownLight/60 font-semibold px-5 py-2.5 rounded-lg backdrop-blur-sm flex items-center space-x-2 transition hover:scale-105">
+                        <i class="fa-solid fa-check"></i>
+                        <span id="heroWatchlistText">Markér som set</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILTER TABS & STATS BAR -->
+        <section class="max-w-7xl mx-auto px-4 sm:px-8 mb-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-brand-brownDark/50 pb-4">
+                
+                <!-- Filter Pills -->
+                <div class="flex items-center space-x-2 overflow-x-auto no-scrollbar py-1">
+                    <button onclick="filterByStatus('all')" id="tab-all" class="filter-tab px-4 py-1.5 rounded-full text-xs font-medium bg-brand-green text-white transition border border-brand-greenLight/40 shadow-md">
+                        Alle Film & Serier
+                    </button>
+                    <button onclick="filterByStatus('unwatched')" id="tab-unwatched" class="filter-tab px-4 py-1.5 rounded-full text-xs font-medium bg-brand-brownDark/60 text-gray-300 hover:bg-brand-brownDark transition border border-brand-brownLight/30">
+                        På Ønskelisten 🎬
+                    </button>
+                    <button onclick="filterByStatus('watched')" id="tab-watched" class="filter-tab px-4 py-1.5 rounded-full text-xs font-medium bg-brand-brownDark/60 text-gray-300 hover:bg-brand-brownDark transition border border-brand-brownLight/30">
+                        Set Sammen ✅
+                    </button>
+                </div>
+
+                <!-- Stats summary -->
+                <div class="text-xs text-gray-400 flex items-center space-x-3">
+                    <span><strong id="statTotal" class="text-emerald-400">0</strong> i alt</span>
+                    <span>•</span>
+                    <span><strong id="statUnwatched" class="text-amber-400">0</strong> på ønskelisten</span>
+                    <span>•</span>
+                    <span><strong id="statWatched" class="text-emerald-300">0</strong> set</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEARCH RESULTS CONTAINER -->
+        <section id="searchResultsSection" class="max-w-7xl mx-auto px-4 sm:px-8 mb-10 hidden">
+            <h2 class="text-xl font-bold text-emerald-300 mb-4 flex items-center space-x-2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Søgeresultater</span>
+            </h2>
+            <div id="searchResultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <!-- Dynamic Search Cards -->
+            </div>
+        </section>
+
+        <!-- MOVIE CATEGORIES / ROWS -->
+        <div id="rowsContainer" class="space-y-8 max-w-7xl mx-auto px-4 sm:px-8 pb-16">
+            <!-- Dynamic Rows -->
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-brand-brownDark/50 bg-black/40 py-6 text-center text-xs text-gray-500">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-heart text-emerald-500"></i>
+                <span class="text-gray-300 font-medium">Marie & Rasmus Movie Night</span>
+            </div>
+            <p class="text-gray-500">KæresteBio &copy; 2026</p>
+        </div>
+    </footer>
+
+
+    <!-- MODAL: DETAILED MOVIE VIEW -->
+    <div id="detailsModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-brand-card border border-brand-brownLight/40 rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl relative transform transition-all scale-95" id="detailsModalContent">
+            
+            <!-- Close Button -->
+            <button onclick="closeModal('detailsModal')" class="absolute top-4 right-4 z-20 bg-black/60 hover:bg-black text-gray-300 hover:text-white w-9 h-9 rounded-full flex items-center justify-center transition border border-white/10">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <!-- Poster Header -->
+            <div class="relative h-60 sm:h-72 w-full bg-slate-900">
+                <img id="modalPoster" src="" alt="Poster" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-card via-brand-card/40 to-transparent"></div>
+                <div class="absolute bottom-4 left-6 right-6">
+                    <span id="modalGenre" class="bg-brand-green/90 text-emerald-100 text-xs font-semibold px-2.5 py-1 rounded-md border border-emerald-400/30 uppercase tracking-wider mb-2 inline-block">Genre</span>
+                    <h2 id="modalTitle" class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-none drop-shadow">Titel</h2>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="p-6 space-y-4">
+                
+                <!-- Info Bar -->
+                <div class="flex flex-wrap items-center justify-between text-xs sm:text-sm text-gray-300 pb-3 border-b border-brand-brownDark">
+                    <div class="flex items-center space-x-4">
+                        <span><i class="fa-regular fa-clock mr-1 text-emerald-400"></i><span id="modalDuration">120 min</span></span>
+                    </div>
+
+                    <div>
+                        <span id="modalStatusBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-950 text-amber-200 border border-amber-700/50">
+                            På ønskelisten
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Synopsis -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase text-brand-greenLight tracking-wider mb-1">Handling / Synopsis</h4>
+                    <p id="modalDesc" class="text-gray-300 text-sm leading-relaxed font-light">
+                        Beskrivelse af filmen...
+                    </p>
+                </div>
+
+                <!-- Rating Section (ONLY VISIBLE IF MOVIE IS WATCHED) -->
+                <div id="modalRatingSection" class="bg-brand-brownDark/40 border border-brand-brownLight/40 rounded-xl p-4 hidden">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h4 class="text-xs font-bold uppercase text-amber-300 tracking-wider">Vores Terningekast / Bedømmelse</h4>
+                            <p class="text-[11px] text-gray-400">I har set denne film! Hvad giver I den?</p>
+                        </div>
+                        
+                        <div class="flex items-center space-x-1">
+                            <select id="modalRatingSelect" onchange="updateMovieRatingFromModal(this.value)" class="bg-brand-brownDark text-amber-300 font-bold text-sm px-3 py-1.5 rounded-lg border border-brand-brownLight focus:outline-none focus:border-brand-greenLight">
+                                <option value="0">Ingen rating endnu</option>
+                                <option value="6">🎲 6 / 6 (Mesterværk)</option>
+                                <option value="5">🎲 5 / 6 (Super god)</option>
+                                <option value="4">🎲 4 / 6 (Udmærket)</option>
+                                <option value="3">🎲 3 / 6 (Middel)</option>
+                                <option value="2">🎲 2 / 6 (Svag)</option>
+                                <option value="1">🎲 1 / 6 (Dårlig)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions Bar -->
+                <div class="pt-2 flex flex-wrap items-center justify-between gap-3 border-t border-brand-brownDark">
+                    <button id="toggleWatchedBtn" onclick="toggleCurrentMovieWatched()" class="px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2 bg-brand-green hover:bg-brand-greenLight text-white shadow">
+                        <i class="fa-solid fa-check"></i>
+                        <span id="toggleWatchedText">Markér som set</span>
+                    </button>
+
+                    <div class="flex items-center space-x-2">
+                        <button id="editMovieBtn" onclick="editCurrentMovie()" class="px-3 py-2 rounded-lg text-xs font-medium text-gray-300 hover:text-white bg-brand-brownDark hover:bg-brand-brownLight transition">
+                            <i class="fa-solid fa-pen-to-square mr-1"></i> Rediger
+                        </button>
+                        <button id="deleteMovieBtn" onclick="deleteCurrentMovie()" class="px-3 py-2 rounded-lg text-xs font-medium text-red-400 hover:text-red-300 bg-red-950/40 hover:bg-red-900/50 border border-red-800/40 transition">
+                            <i class="fa-solid fa-trash mr-1"></i> Slet
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL: RANDOMIZER / WHAT TO WATCH -->
+    <div id="randomizerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-brand-card border border-brand-greenLight/50 rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative">
+            
+            <button onclick="closeModal('randomizerModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <div class="w-16 h-16 rounded-full bg-brand-green/30 border border-brand-greenLight/50 flex items-center justify-center mx-auto mb-4 text-brand-greenLight text-2xl shadow-inner">
+                <i class="fa-solid fa-dice animate-bounce"></i>
+            </div>
+
+            <h3 class="text-xl font-bold text-white mb-1">Aftenens Tilfældige Valg</h3>
+            <p class="text-xs text-gray-400 mb-6">Trækker lod blandt alle usete film på jeres liste!</p>
+
+            <!-- Display Box -->
+            <div id="randomizerCard" class="bg-brand-brownDark/40 border border-brand-brownLight/40 rounded-xl p-4 mb-6 flex flex-col items-center justify-center min-h-[220px] transition-all">
+                <img id="randPoster" src="" class="w-24 h-36 object-cover rounded-lg shadow-md mb-3 border border-brand-brownLight/40">
+                <h4 id="randTitle" class="text-lg font-extrabold text-amber-200">Tryk på knappen for at starte</h4>
+                <p id="randGenre" class="text-xs text-emerald-400 font-medium">...</p>
+            </div>
+
+            <div class="flex items-center justify-center space-x-3">
+                <button id="randSpinBtn" onclick="runRandomizer()" class="bg-gradient-to-r from-brand-green to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-white font-bold px-6 py-2.5 rounded-lg text-sm shadow-lg flex items-center space-x-2 transition transform active:scale-95">
+                    <i class="fa-solid fa-shuffle"></i>
+                    <span>Træk en Film!</span>
+                </button>
+                <button id="randSelectBtn" onclick="acceptRandomizerChoice()" class="hidden bg-brand-brownDark hover:bg-brand-brownLight text-white font-bold px-5 py-2.5 rounded-lg text-sm border border-brand-brownLight/60 transition">
+                    <span>Vis Detaljer</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL: ADD / EDIT MOVIE FORM -->
+    <div id="addMovieModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-brand-card border border-brand-brownLight/50 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            
+            <button onclick="closeModal('addMovieModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+
+            <h3 id="formModalTitle" class="text-xl font-bold text-white mb-4 flex items-center space-x-2">
+                <i class="fa-solid fa-film text-emerald-400"></i>
+                <span>Tilføj Ny Film</span>
+            </h3>
+
+            <!-- FORM (WITHOUT RATING FIELD) -->
+            <form id="movieForm" onsubmit="saveMovieForm(event)" class="space-y-4">
+                <input type="hidden" id="formMovieId">
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Filmtitel *</label>
+                    <input type="text" id="formTitle" required placeholder="f.eks. Den skyldige" 
+                           class="w-full bg-brand-brownDark/50 border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Kategori / Genre *</label>
+                        <select id="formCategory" class="w-full bg-brand-brownDark border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight">
+                            <option value="Danske Thrillers & Afdeling Q">Danske Thrillers & Afdeling Q</option>
+                            <option value="Fantasy & Marathon">Fantasy & Marathon</option>
+                            <option value="Action & Thriller">Action & Thriller</option>
+                            <option value="Hygge & Romantik">Hygge & Romantik</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Varighed (minutter)</label>
+                        <input type="number" id="formDuration" placeholder="120" 
+                               class="w-full bg-brand-brownDark/50 border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Billede / Poster URL</label>
+                    <input type="url" id="formPoster" placeholder="https://images.unsplash.com/..." 
+                           class="w-full bg-brand-brownDark/50 border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight">
+                    <span class="text-[10px] text-gray-400">Valgfri - lades tom for automatisk standardbillede.</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-300 uppercase mb-1">Kort Handling / Synopsis</label>
+                    <textarea id="formDesc" rows="3" placeholder="Beskriv hvad filmen handler om..." 
+                              class="w-full bg-brand-brownDark/50 border border-brand-brownLight/50 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-greenLight resize-none"></textarea>
+                </div>
+
+                <p class="text-[11px] text-amber-300/80 italic bg-amber-950/30 p-2.5 rounded-lg border border-amber-900/30">
+                    💡 Bemærk: Alle nye film tilføjes direkte på 'På ønskelisten'. Du kan give den et terningekast/rating når I har set den!
+                </p>
+
+                <div class="pt-2 flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('addMovieModal')" class="px-4 py-2 rounded-lg text-xs font-medium text-gray-400 hover:text-white transition">
+                        Annuller
+                    </button>
+                    <button type="submit" class="bg-brand-green hover:bg-brand-greenLight text-white font-semibold px-5 py-2 rounded-lg text-sm shadow transition">
+                        Gem Film
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // STRICT SPECIFIED DEFAULT MOVIES LIST
+        const DEFAULT_MOVIES = [
+            // AFDELING Q & DANSKE THRILLERS
+            {
+                id: 'afq-1',
+                title: 'Kvinden i Buret (Afdeling Q)',
+                category: 'Danske Thrillers & Afdeling Q',
+                duration: 89,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop',
+                description: 'Kriminalkommissær Carl Mørck og hans assistant Assad genoptager sagen om den forsvundne politiker Merete Lynggaard.'
+            },
+            {
+                id: 'afq-2',
+                title: 'Fasandræberne (Afdeling Q)',
+                category: 'Danske Thrillers & Afdeling Q',
+                duration: 119,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1518676599629-2757d603b516?q=80&w=800&auto=format&fit=crop',
+                description: 'Et dobbeltdrab i 1994 fører Afdeling Q på sporet af en gruppe kostskoleelever fra samfundets topklasse.'
+            },
+            {
+                id: 'afq-3',
+                title: 'Flaskepost fra P (Afdeling Q)',
+                category: 'Danske Thrillers & Afdeling Q',
+                duration: 112,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop',
+                description: 'En gammel flaskepost med et udvasket råb om hjælp finder vej til Afdeling Q.'
+            },
+            {
+                id: 'afq-4',
+                title: 'Journal 64 (Afdeling Q)',
+                category: 'Danske Thrillers & Afdeling Q',
+                duration: 119,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=800&auto=format&fit=crop',
+                description: 'Tre mumificerede lig findes i en københavnsk lejlighed siddende omkring et spisebord med en tom plads.'
+            },
+            {
+                id: 'afq-5',
+                title: 'Marco Effekten (Afdeling Q)',
+                category: 'Danske Thrillers & Afdeling Q',
+                duration: 125,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?q=80&w=800&auto=format&fit=crop',
+                description: 'Den unge romadreng Marco arresteres ved den danske grænse med et pas tilhørende en forsvundet pædagog.'
+            },
+            {
+                id: 'afq-6',
+                title: 'Den Grænseløse (Afdeling Q)',
+                category: 'Danske Thrillers & Afdeling Q',
+                duration: 125,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1514539079130-25950c84af65?q=80&w=800&auto=format&fit=crop',
+                description: 'Carl Mørck sendes til Bornholm for at opklare en uopklaret sag om en ung kvinde dræbt syv år tidligere.'
+            },
+            {
+                id: 'dk-englemageren',
+                title: 'Englemageren',
+                category: 'Danske Thrillers & Afdeling Q',
+                duration: 110,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?q=80&w=800&auto=format&fit=crop',
+                description: 'En uhyggelig dansk kriminal-thriller om jagten på en brutal seriemorder.'
+            },
+
+            // HARRY POTTER SERIEN (1-8)
+            {
+                id: 'hp-1',
+                title: 'Harry Potter og De Vises Sten',
+                category: 'Fantasy & Marathon',
+                duration: 152,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1514539079130-25950c84af65?q=80&w=800&auto=format&fit=crop',
+                description: 'Harry opdager på sin 11-års fødselsdag, at han er en troldmand og starter på Hogwarts.'
+            },
+            {
+                id: 'hp-2',
+                title: 'Harry Potter og Hemmelighedernes Kammer',
+                category: 'Fantasy & Marathon',
+                duration: 161,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop',
+                description: 'En mørk kraft angriber eleverne på Hogwarts, og Hemmelighedernes Kammer genåbnes.'
+            },
+            {
+                id: 'hp-3',
+                title: 'Harry Potter og Fangen fra Azkaban',
+                category: 'Fantasy & Marathon',
+                duration: 142,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
+                description: 'Den berygtede fange Sirius Black undslipper Azkaban og søger mod Hogwarts.'
+            },
+            {
+                id: 'hp-4',
+                title: 'Harry Potter og Flammernes Bæger',
+                category: 'Fantasy & Marathon',
+                duration: 157,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop',
+                description: 'Harry udvælges uventet til at deltage i den farefulde Magiske Trekampsturnering.'
+            },
+            {
+                id: 'hp-5',
+                title: 'Harry Potter og Føniksordenen',
+                category: 'Fantasy & Marathon',
+                duration: 138,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1518676599629-2757d603b516?q=80&w=800&auto=format&fit=crop',
+                description: 'Voldemort er vendt tilbage, og Harry samler eleverne i Dumbledores Hær.'
+            },
+            {
+                id: 'hp-6',
+                title: 'Harry Potter og Halvblodsprinsen',
+                category: 'Fantasy & Marathon',
+                duration: 153,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop',
+                description: 'Dumbledore forbereder Harry på det endelige opgør ved at udforske Voldemorts fortid.'
+            },
+            {
+                id: 'hp-7',
+                title: 'Harry Potter og Dødsregalierne - Del 1',
+                category: 'Fantasy & Marathon',
+                duration: 146,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=800&auto=format&fit=crop',
+                description: 'Harry, Ron og Hermione forlader Hogwarts for at opspore og ødelægge Voldemorts Horcruxer.'
+            },
+            {
+                id: 'hp-8',
+                title: 'Harry Potter og Dødsregalierne - Del 2',
+                category: 'Fantasy & Marathon',
+                duration: 130,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1509114397022-ed747cca3f65?q=80&w=800&auto=format&fit=crop',
+                description: 'Det episk afsluttende slag om Hogwarts og den endelige kamp mod Voldemort.'
+            },
+
+            // THE HUNGER GAMES (1-5)
+            {
+                id: 'hg-1',
+                title: 'The Hunger Games',
+                category: 'Fantasy & Marathon',
+                duration: 142,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop',
+                description: 'Katniss Everdeen melder sig frivilligt til de dødelige Hunger Games for at redde sin lillesøster.'
+            },
+            {
+                id: 'hg-2',
+                title: 'The Hunger Games: Catching Fire',
+                category: 'Fantasy & Marathon',
+                duration: 146,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
+                description: 'Katniss og Peeta tvinges tilbage i arenaen til den 75. Jubilæumsudgave af Hunger Games.'
+            },
+            {
+                id: 'hg-3',
+                title: 'The Hunger Games: Mockingjay - Part 1',
+                category: 'Fantasy & Marathon',
+                duration: 123,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop',
+                description: 'Katniss bliver symbolet på rebellionen mod Capitol i Distrikt 13.'
+            },
+            {
+                id: 'hg-4',
+                title: 'The Hunger Games: Mockingjay - Part 2',
+                category: 'Fantasy & Marathon',
+                duration: 137,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1518676599629-2757d603b516?q=80&w=800&auto=format&fit=crop',
+                description: 'Rebellionen rykker helt ind i Capitol til det afgørende opgør mod Præsident Snow.'
+            },
+            {
+                id: 'hg-5',
+                title: 'The Hunger Games: The Ballad of Songbirds & Snakes',
+                category: 'Fantasy & Marathon',
+                duration: 157,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop',
+                description: 'Historien om unge Coriolanus Snow og oprindelsen til de 10. Hunger Games.'
+            },
+
+            // TWILIGHT SAGAEN (1-5)
+            {
+                id: 'tw-1',
+                title: 'Twilight',
+                category: 'Fantasy & Marathon',
+                duration: 122,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=800&auto=format&fit=crop',
+                description: 'Bella Swan flytter til Forks og forelsker sig i den mystiske vampyr Edward Cullen.'
+            },
+            {
+                id: 'tw-2',
+                title: 'The Twilight Saga: New Moon',
+                category: 'Fantasy & Marathon',
+                duration: 130,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=800&auto=format&fit=crop',
+                description: 'Edward forlader Bella for at beskytte hende, og hun knytter tætte bånd til varulven Jacob.'
+            },
+            {
+                id: 'tw-3',
+                title: 'The Twilight Saga: Eclipse',
+                category: 'Fantasy & Marathon',
+                duration: 124,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1518676599629-2757d603b516?q=80&w=800&auto=format&fit=crop',
+                description: 'Bella omgives af fare, mens en hær af nyskabte vampyrer truer Seattle.'
+            },
+            {
+                id: 'tw-4',
+                title: 'The Twilight Saga: Breaking Dawn - Part 1',
+                category: 'Fantasy & Marathon',
+                duration: 117,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop',
+                description: 'Bella og Edwards bryllup bringer uventede konsekvenser og en livsfarlig graviditet.'
+            },
+            {
+                id: 'tw-5',
+                title: 'The Twilight Saga: Breaking Dawn - Part 2',
+                category: 'Fantasy & Marathon',
+                duration: 115,
+                rating: 0,
+                status: 'unwatched',
+                poster: 'https://images.unsplash.com/photo-1478720568477-152d9b164e26?q=80&w=800&auto=format&fit=crop',
+                description: 'Cullen-familien samler vampyrallierede fra hele verden for at beskytte Renesmee mod Volturi.'
+            }
+        ];
+
+        let movies = [];
+        let activeFilter = 'all';
+        let selectedMovieId = null;
+        let randomPickedMovie = null;
+
+        // INITIAL LOAD & GUARANTEED DISPLAY
+        window.onload = function() {
+            loadMovies();
+            setupHeroSpotlight();
+            renderApp();
+        };
+
+        function loadMovies() {
+            const stored = localStorage.getItem('m_and_r_movies_v4');
+            if (stored) {
+                try {
+                    movies = JSON.parse(stored);
+                    if (!movies || movies.length === 0) {
+                        movies = DEFAULT_MOVIES;
+                        saveMovies();
+                    }
+                } catch(e) {
+                    movies = DEFAULT_MOVIES;
+                    saveMovies();
+                }
+            } else {
+                movies = DEFAULT_MOVIES;
+                saveMovies();
+            }
+        }
+
+        function saveMovies() {
+            localStorage.setItem('m_and_r_movies_v4', JSON.stringify(movies));
+            updateStats();
+        }
+
+        // RENDER ENTIRE APP
+        function renderApp() {
+            const container = document.getElementById('rowsContainer');
+            container.innerHTML = '';
+
+            const categories = [
+                'Danske Thrillers & Afdeling Q',
+                'Fantasy & Marathon'
+            ];
+
+            let filteredMovies = movies;
+            if (activeFilter === 'unwatched') {
+                filteredMovies = movies.filter(m => m.status === 'unwatched');
+            } else if (activeFilter === 'watched') {
+                filteredMovies = movies.filter(m => m.status === 'watched');
+            }
+
+            categories.forEach(cat => {
+                const catMovies = filteredMovies.filter(m => m.category === cat);
+                if (catMovies.length > 0) {
+                    container.appendChild(createCategoryRow(cat, catMovies));
+                }
+            });
+
+            // Other user-added categories
+            const otherMovies = filteredMovies.filter(m => !categories.includes(m.category));
+            if (otherMovies.length > 0) {
+                container.appendChild(createCategoryRow('Andre Film & Serier', otherMovies));
+            }
+
+            updateStats();
+        }
+
+        // CREATE ROW
+        function createCategoryRow(title, movieArray) {
+            const rowWrapper = document.createElement('div');
+            rowWrapper.className = 'space-y-3';
+
+            const rowHeader = `
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg sm:text-xl font-bold text-white tracking-wide flex items-center space-x-2">
+                        <span class="w-1.5 h-5 bg-brand-greenLight rounded-full inline-block"></span>
+                        <span>${title}</span>
+                    </h3>
+                    <span class="text-xs text-gray-400 font-medium">${movieArray.length} titler</span>
+                </div>
+            `;
+
+            let cardsHTML = `<div class="flex space-x-4 overflow-x-auto no-scrollbar py-4 px-1 scroll-smooth">`;
+            
+            movieArray.forEach(m => {
+                const isWatched = m.status === 'watched';
+                const posterUrl = m.poster || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop';
+                
+                cardsHTML += `
+                    <div onclick="openDetailsModal('${m.id}')" 
+                         class="movie-card flex-none w-40 sm:w-48 bg-brand-card rounded-xl overflow-hidden cursor-pointer border border-brand-brownLight/30 relative group">
+                        
+                        <!-- Poster Image -->
+                        <div class="h-60 sm:h-68 w-full bg-brand-brownDark relative overflow-hidden">
+                            <img src="${posterUrl}" 
+                                 onerror="this.src='https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop'"
+                                 alt="${m.title}" class="w-full h-full object-cover transition duration-500 group-hover:scale-105">
+                            
+                            <!-- Overlay on hover -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition duration-300 flex flex-col justify-end p-3">
+                                <div class="flex items-center justify-between text-xs text-emerald-300 font-bold mb-1">
+                                    <span>${m.duration || 120} m</span>
+                                    ${isWatched && m.rating > 0 ? `<span class="text-amber-400">🎲 ${m.rating}/6</span>` : ''}
+                                </div>
+                                <p class="text-[11px] text-gray-300 line-clamp-2 leading-tight">${m.description || ''}</p>
+                            </div>
+
+                            <!-- Watched Badge -->
+                            ${isWatched ? `
+                                <div class="absolute top-2 right-2 bg-emerald-700/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-md border border-emerald-400/40 shadow">
+                                    <i class="fa-solid fa-check text-[9px] mr-0.5"></i> Set
+                                </div>
+                            ` : `
+                                <div class="absolute top-2 right-2 bg-amber-900/80 text-amber-200 text-[10px] font-medium px-2 py-0.5 rounded-full backdrop-blur-md border border-amber-600/40">
+                                    Ønskeliste
+                                </div>
+                            `}
+                        </div>
+
+                        <!-- Card Info -->
+                        <div class="p-3 bg-brand-card">
+                            <h4 class="text-sm font-bold text-gray-100 truncate group-hover:text-emerald-300 transition-colors">${m.title}</h4>
+                            <div class="flex items-center justify-between text-[11px] text-gray-400 mt-1">
+                                <span class="truncate">${m.category}</span>
+                                ${isWatched && m.rating > 0 ? `<span class="text-amber-400 font-bold ml-1">🎲 ${m.rating}</span>` : ''}
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            });
+
+            cardsHTML += `</div>`;
+            rowWrapper.innerHTML = rowHeader + cardsHTML;
+            return rowWrapper;
+        }
+
+        // HERO SPOTLIGHT
+        function setupHeroSpotlight() {
+            if (movies.length === 0) return;
+            const featured = movies[0]; // Spotlight on first movie (Kvinden i Buret)
+            
+            document.getElementById('heroBg').style.backgroundImage = `url('${featured.poster}')`;
+            document.getElementById('heroTitle').innerText = featured.title;
+            document.getElementById('heroDuration').innerText = `${featured.duration || 120} min`;
+            document.getElementById('heroGenre').innerText = featured.category;
+            document.getElementById('heroDesc').innerText = featured.description || '';
+
+            document.getElementById('heroPlayBtn').onclick = () => openDetailsModal(featured.id);
+            
+            const watchBtn = document.getElementById('heroWatchlistBtn');
+            const watchBtnText = document.getElementById('heroWatchlistText');
+            
+            if (featured.status === 'watched') {
+                watchBtnText.innerText = 'Set Sammen';
+                watchBtn.className = 'bg-emerald-800/80 text-emerald-200 border border-emerald-500/50 font-semibold px-5 py-2.5 rounded-lg backdrop-blur-sm flex items-center space-x-2 transition hover:scale-105';
+            } else {
+                watchBtnText.innerText = 'Markér som set';
+                watchBtn.className = 'bg-brand-brownDark/80 hover:bg-brand-brownLight text-gray-200 border border-brand-brownLight/60 font-semibold px-5 py-2.5 rounded-lg backdrop-blur-sm flex items-center space-x-2 transition hover:scale-105';
+            }
+            
+            watchBtn.onclick = () => {
+                toggleWatched(featured.id);
+                setupHeroSpotlight();
+            };
+        }
+
+        // UPDATE STATS
+        function updateStats() {
+            document.getElementById('statTotal').innerText = movies.length;
+            document.getElementById('statUnwatched').innerText = movies.filter(m => m.status === 'unwatched').length;
+            document.getElementById('statWatched').innerText = movies.filter(m => m.status === 'watched').length;
+        }
+
+        // FILTER TABS
+        function filterByStatus(status) {
+            activeFilter = status;
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.className = 'filter-tab px-4 py-1.5 rounded-full text-xs font-medium bg-brand-brownDark/60 text-gray-300 hover:bg-brand-brownDark transition border border-brand-brownLight/30';
+            });
+            const activeTab = document.getElementById(`tab-${status}`);
+            if (activeTab) {
+                activeTab.className = 'filter-tab px-4 py-1.5 rounded-full text-xs font-medium bg-brand-green text-white transition border border-brand-greenLight/40 shadow-md';
+            }
+            renderApp();
+        }
+
+        // SEARCH
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resultsSection = document.getElementById('searchResultsSection');
+            const resultsGrid = document.getElementById('searchResultsGrid');
+            const rowsContainer = document.getElementById('rowsContainer');
+
+            if (query.length === 0) {
+                resultsSection.classList.add('hidden');
+                rowsContainer.classList.remove('hidden');
+                return;
+            }
+
+            rowsContainer.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+
+            const filtered = movies.filter(m => 
+                m.title.toLowerCase().includes(query) || 
+                m.category.toLowerCase().includes(query) ||
+                (m.description && m.description.toLowerCase().includes(query))
+            );
+
+            resultsGrid.innerHTML = '';
+
+            if (filtered.length === 0) {
+                resultsGrid.innerHTML = `<p class="col-span-full text-center text-gray-400 py-8">Ingen film fundet der matcher "${query}"</p>`;
+                return;
+            }
+
+            filtered.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'movie-card bg-brand-card rounded-xl overflow-hidden cursor-pointer border border-brand-brownLight/30 relative';
+                card.onclick = () => openDetailsModal(m.id);
+                card.innerHTML = `
+                    <div class="h-56 bg-brand-brownDark relative overflow-hidden">
+                        <img src="${m.poster}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="p-3">
+                        <h4 class="text-sm font-bold text-gray-100 truncate">${m.title}</h4>
+                        <span class="text-[11px] text-emerald-400">${m.category}</span>
+                    </div>
+                `;
+                resultsGrid.appendChild(card);
+            });
+        }
+
+        // MODALS HELPERS
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        // DETAILS MODAL
+        function openDetailsModal(id) {
+            const movie = movies.find(m => m.id === id);
+            if (!movie) return;
+
+            selectedMovieId = id;
+
+            document.getElementById('modalTitle').innerText = movie.title;
+            document.getElementById('modalGenre').innerText = movie.category;
+            document.getElementById('modalDuration').innerText = `${movie.duration || 120} minutter`;
+            document.getElementById('modalDesc').innerText = movie.description || 'Ingen beskrivelse angivet.';
+            document.getElementById('modalPoster').src = movie.poster || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop';
+
+            const statusBadge = document.getElementById('modalStatusBadge');
+            const toggleBtnText = document.getElementById('toggleWatchedText');
+            const ratingSection = document.getElementById('modalRatingSection');
+            const ratingSelect = document.getElementById('modalRatingSelect');
+
+            if (movie.status === 'watched') {
+                statusBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-300 border border-emerald-700/50 flex items-center space-x-1';
+                statusBadge.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>Set Sammen</span>`;
+                toggleBtnText.innerText = 'Markér som uset';
+                
+                // UNLOCK RATING FIELD IF WATCHED
+                ratingSection.classList.remove('hidden');
+                ratingSelect.value = movie.rating || 0;
+            } else {
+                statusBadge.className = 'px-3 py-1 rounded-full text-xs font-semibold bg-amber-950 text-amber-200 border border-amber-700/50 flex items-center space-x-1';
+                statusBadge.innerHTML = `<i class="fa-regular fa-clock"></i> <span>På Ønskelisten</span>`;
+                toggleBtnText.innerText = 'Markér som set';
+                
+                // HIDE RATING FIELD IF UNWATCHED
+                ratingSection.classList.add('hidden');
+            }
+
+            showModal('detailsModal');
+        }
+
+        function updateMovieRatingFromModal(val) {
+            if (!selectedMovieId) return;
+            const num = parseInt(val);
+            movies = movies.map(m => m.id === selectedMovieId ? { ...m, rating: num } : m);
+            saveMovies();
+            renderApp();
+        }
+
+        function toggleCurrentMovieWatched() {
+            if (!selectedMovieId) return;
+            toggleWatched(selectedMovieId);
+            openDetailsModal(selectedMovieId);
+        }
+
+        function toggleWatched(id) {
+            movies = movies.map(m => {
+                if (m.id === id) {
+                    const newStatus = m.status === 'watched' ? 'unwatched' : 'watched';
+                    return { ...m, status: newStatus };
+                }
+                return m;
+            });
+            saveMovies();
+            renderApp();
+        }
+
+        function deleteCurrentMovie() {
+            if (!selectedMovieId) return;
+            if (confirm('Vil I fjerne denne film fra jeres liste?')) {
+                movies = movies.filter(m => m.id !== selectedMovieId);
+                saveMovies();
+                renderApp();
+                closeModal('detailsModal');
+            }
+        }
+
+        // RANDOMIZER LOGIC
+        function openRandomizerModal() {
+            const unwatched = movies.filter(m => m.status === 'unwatched');
+            const selectBtn = document.getElementById('randSelectBtn');
+            selectBtn.classList.add('hidden');
+
+            if (unwatched.length === 0) {
+                document.getElementById('randTitle').innerText = 'I har set alle film!';
+                document.getElementById('randGenre').innerText = 'Tilføj nye film til listen for at bruge lodtrækningen.';
+                document.getElementById('randPoster').src = 'https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?q=80&w=600&auto=format&fit=crop';
+            } else {
+                document.getElementById('randTitle').innerText = 'Klar til lodtrækning?';
+                document.getElementById('randGenre').innerText = `${unwatched.length} usete film i puljen`;
+                document.getElementById('randPoster').src = unwatched[0].poster || 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop';
+            }
+
+            showModal('randomizerModal');
+        }
+
+        function runRandomizer() {
+            const unwatched = movies.filter(m => m.status === 'unwatched');
+            if (unwatched.length === 0) return;
+
+            const card = document.getElementById('randomizerCard');
+            const spinBtn = document.getElementById('randSpinBtn');
+            const selectBtn = document.getElementById('randSelectBtn');
+
+            spinBtn.disabled = true;
+            card.classList.add('shuffle-anim');
+
+            let counter = 0;
+            const interval = setInterval(() => {
+                const randomSample = unwatched[Math.floor(Math.random() * unwatched.length)];
+                document.getElementById('randTitle').innerText = randomSample.title;
+                document.getElementById('randGenre').innerText = randomSample.category;
+                document.getElementById('randPoster').src = randomSample.poster;
+                
+                counter++;
+                if (counter > 15) {
+                    clearInterval(interval);
+                    card.classList.remove('shuffle-anim');
+                    
+                    randomPickedMovie = unwatched[Math.floor(Math.random() * unwatched.length)];
+                    document.getElementById('randTitle').innerText = randomPickedMovie.title;
+                    document.getElementById('randGenre').innerText = `✨ Valget faldt på ${randomPickedMovie.title}! ✨`;
+                    document.getElementById('randPoster').src = randomPickedMovie.poster;
+                    
+                    spinBtn.disabled = false;
+                    selectBtn.classList.remove('hidden');
+                }
+            }, 100);
+        }
+
+        function acceptRandomizerChoice() {
+            if (randomPickedMovie) {
+                closeModal('randomizerModal');
+                openDetailsModal(randomPickedMovie.id);
+            }
+        }
+
+        // ADD MOVIE FORM LOGIC (NO RATING INPUT)
+        function openAddMovieModal() {
+            document.getElementById('formModalTitle').innerText = 'Tilføj Ny Film';
+            document.getElementById('movieForm').reset();
+            document.getElementById('formMovieId').value = '';
+            showModal('addMovieModal');
+        }
+
+        function editCurrentMovie() {
+            const movie = movies.find(m => m.id === selectedMovieId);
+            if (!movie) return;
+
+            closeModal('detailsModal');
+
+            document.getElementById('formModalTitle').innerText = 'Rediger Film';
+            document.getElementById('formMovieId').value = movie.id;
+            document.getElementById('formTitle').value = movie.title;
+            document.getElementById('formCategory').value = movie.category;
+            document.getElementById('formDuration').value = movie.duration || 120;
+            document.getElementById('formPoster').value = movie.poster || '';
+            document.getElementById('formDesc').value = movie.description || '';
+
+            showModal('addMovieModal');
+        }
+
+        function saveMovieForm(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('formMovieId').value;
+            const title = document.getElementById('formTitle').value.trim();
+            const category = document.getElementById('formCategory').value;
+            const duration = parseInt(document.getElementById('formDuration').value) || 120;
+            let poster = document.getElementById('formPoster').value.trim();
+            const description = document.getElementById('formDesc').value.trim();
+
+            if (!poster) {
+                poster = 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?q=80&w=800&auto=format&fit=crop';
+            }
+
+            if (id) {
+                // Edit existing
+                movies = movies.map(m => m.id === id ? { ...m, title, category, duration, poster, description } : m);
+            } else {
+                // Create new (ALWAYS unwatched with 0 rating initially)
+                const newMovie = {
+                    id: Date.now().toString(),
+                    title,
+                    category,
+                    duration,
+                    rating: 0,
+                    status: 'unwatched',
+                    poster,
+                    description
+                };
+                movies.unshift(newMovie);
+            }
+
+            saveMovies();
+            renderApp();
+            closeModal('addMovieModal');
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
