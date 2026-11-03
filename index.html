@@ -365,10 +365,23 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT WITH FIXED AUTHENTICATED SAVE -->
-    <script>
-        const JSONBIN_BIN_ID = '6ae9b9ffffd5d16053a210c4';   
-        const JSONBIN_API_KEY = '$2a$10$5XQFeeXUU3Two2Y8e/jg2.jgXlqcw55ye/I2yDJOZGqBt9NDEoLai'; 
+    <!-- FIREBASE SDK & APP LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBErMe0eAHaMrPMKrjA3_SmZ1rETp0Em5g",
+            authDomain: "movienight-2f0a5.firebaseapp.com",
+            databaseURL: "https://movienight-2f0a5-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "movienight-2f0a5",
+            storageBucket: "movienight-2f0a5.firebasestorage.app",
+            messagingSenderId: "134311460095",
+            appId: "1:134311460095:web:46d260830970e8d56a20ca"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
 
         const DEFAULT_MOVIES = [
             {"id":"1793688525151","title":"Kongekabale","category":"Danske Thrillers & Afdeling Q","duration":107,"rating":0,"status":"unwatched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqK9HagQ4MIgYDZN5rgG19QvZvGmUvYZHauV8_90eWHg&s=10","description":"Den ambitiøse journalist Ulrik Torp får sit livs chance som Dagbladets nye mand på Christiansborg. Der er kun tre uger til folketingsvalget og Midterpartiets leder er blevet alvorligt kvæstet i en bilulykke."},
@@ -377,7 +390,7 @@
             {"id":"1793687930840","title":"The Housemaid","category":"Thriller","duration":131,"rating":0,"status":"unwatched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLTetO7hgSwhDhvQbyYiZ5_T0llosqARtXdB8wqqAQcA&s=10","description":"The Housemaid is a psychological thriller based on the 2022 bestselling novel by Freida McFadden, which was also adapted into a 2025 feature film directed by Paul Feig"},
             {"id":"afq-1","title":"Kvinden i Buret (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":89,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM9QPZsugbSp77nRXtmMd-zTeT0usDOe2XbGIW2fUO_Q&s=10","description":"Kriminalkommissær Carl Mørck og hans assistant Assad genoptager sagen om den forsvundne politiker Merete Lynggaard."},
             {"id":"afq-2","title":"Fasandræberne (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":119,"rating":0,"status":"watched","poster":"https://m.media-amazon.com/images/M/MV5BMTUwMTI0NDcxMF5BMl5BanBnXkFtZTgwNDAxNTI4MjE@._V1_FMjpg_UX1000_.jpg","description":"Et dobbeltdrab i 1994 fører Afdeling Q på sporet af en gruppe kostskoleelever fra samfundets topklasse."},
-            {"id":"afq-3","title":"Flaskepost fra P (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":112,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn71GBPI_ZrZSoJzYw5Po8w1xdtMxeJGkaWZ77jgcRPg&s=10","description":"En gammel flaskepost med et udvasket råb om hjælp finder vej til Afdeling Q."},
+            {"id":"afq-3","title":"Flaskepost fra P (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":112,"rating":0,"status":"watched","poster":"https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=800&auto=format&fit=crop","description":"En gammel flaskepost med et udvasket råb om hjælp finder vej til Afdeling Q."},
             {"id":"afq-4","title":"Journal 64 (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":119,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn71GBPI_ZrZSoJzYw5Po8w1xdtMxeJGkaWZ77jgcRPg&s=10","description":"Tre mumificerede lig findes i en københavnsk lejlighed siddende omkring et spisebord med en tom plads."},
             {"id":"afq-5","title":"Marco Effekten (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":125,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu1he4AJ2XovjS2GBlkN-xwhi3A9gDETUb26GQMubHKw&s=10","description":"Den unge romadreng Marco arresteres ved den danske grænse med et pas tilhørende en forsvundet pædagog."},
             {"id":"afq-6","title":"Den Grænseløse (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":125,"rating":0,"status":"unwatched","poster":"https://d2gynsnnx1ixn5.cloudfront.net/2wmg5/images/282x422/film/188516/6d6269b0ac3ffc858f9a541a4221e4a0.jpg?w=282","description":"Carl Mørck sendes til Bornholm for at opklare en uopklaret sag om en ung kvinde dræbt syv år tidligere."},
@@ -392,56 +405,48 @@
         let selectedMovieId = null;
         let randomPickedMovie = null;
 
-        window.onload = function() {
-            loadMoviesFromCloud();
-        };
-
-        async function loadMoviesFromCloud() {
-            try {
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-                    headers: { 'X-Master-Key': JSONBIN_API_KEY }
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    const cloudMovies = data.record && data.record.movies ? data.record.movies : null;
-                    
-                    if (!cloudMovies || cloudMovies.length === 0) {
-                        movies = DEFAULT_MOVIES;
-                        await saveMoviesToCloud();
-                    } else {
-                        movies = cloudMovies;
-                    }
-                } else {
-                    movies = DEFAULT_MOVIES;
-                }
-            } catch(e) {
+        // Lyt live på Firebase database
+        const moviesRef = ref(db, 'movies');
+        onValue(moviesRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                movies = Array.isArray(data) ? data : Object.values(data);
+            } else {
                 movies = DEFAULT_MOVIES;
+                set(moviesRef, DEFAULT_MOVIES);
             }
             setupHeroSpotlight();
             renderApp();
+        });
+
+        function saveMoviesToFirebase() {
+            set(moviesRef, movies);
         }
 
-        async function saveMoviesToCloud() {
-            try {
-                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': JSONBIN_API_KEY
-                    },
-                    body: JSON.stringify({ movies: movies })
-                });
-                if (!response.ok) {
-                    console.error("Fejl ved lagring:", await response.text());
-                }
-            } catch(e) {
-                console.error("Fejl ved synkronisering til skyen:", e);
-            }
-            updateStats();
-        }
+        window.renderApp = renderApp;
+        window.setupHeroSpotlight = setupHeroSpotlight;
+        window.updateStats = updateStats;
+        window.filterByStatus = filterByStatus;
+        window.handleSearch = handleSearch;
+        window.showModal = showModal;
+        window.closeModal = closeModal;
+        window.openDetailsModal = openDetailsModal;
+        window.updateMovieRatingFromModal = updateMovieRatingFromModal;
+        window.toggleCurrentMovieWatched = toggleCurrentMovieWatched;
+        window.toggleWatched = toggleWatched;
+        window.deleteCurrentMovie = deleteCurrentMovie;
+        window.openRandomizerModal = openRandomizerModal;
+        window.runRandomizer = runRandomizer;
+        window.acceptRandomizerChoice = acceptRandomizerChoice;
+        window.openAddMovieModal = openAddMovieModal;
+        window.toggleCustomGenreInput = toggleCustomGenreInput;
+        window.editCurrentMovie = editCurrentMovie;
+        window.saveMovieForm = saveMovieForm;
+        window.scrollToTop = scrollToTop;
 
         function renderApp() {
             const container = document.getElementById('rowsContainer');
+            if (!container) return;
             container.innerHTML = '';
 
             let filteredMovies = movies;
@@ -525,35 +530,51 @@
             if (movies.length === 0) return;
             const featured = movies[0];
             
-            document.getElementById('heroBg').style.backgroundImage = `url('${featured.poster}')`;
-            document.getElementById('heroTitle').innerText = featured.title;
-            document.getElementById('heroDuration').innerText = `${featured.duration || 120} min`;
-            document.getElementById('heroGenre').innerText = featured.category;
-            document.getElementById('heroDesc').innerText = featured.description || '';
+            const heroBg = document.getElementById('heroBg');
+            if (heroBg) heroBg.style.backgroundImage = `url('${featured.poster}')`;
+            
+            const heroTitle = document.getElementById('heroTitle');
+            if (heroTitle) heroTitle.innerText = featured.title;
+            
+            const heroDuration = document.getElementById('heroDuration');
+            if (heroDuration) heroDuration.innerText = `${featured.duration || 120} min`;
+            
+            const heroGenre = document.getElementById('heroGenre');
+            if (heroGenre) heroGenre.innerText = featured.category;
+            
+            const heroDesc = document.getElementById('heroDesc');
+            if (heroDesc) heroDesc.innerText = featured.description || '';
 
-            document.getElementById('heroPlayBtn').onclick = () => openDetailsModal(featured.id);
+            const heroPlayBtn = document.getElementById('heroPlayBtn');
+            if (heroPlayBtn) heroPlayBtn.onclick = () => openDetailsModal(featured.id);
             
             const watchBtn = document.getElementById('heroWatchlistBtn');
             const watchBtnText = document.getElementById('heroWatchlistText');
             
-            if (featured.status === 'watched') {
-                watchBtnText.innerText = 'Set Sammen';
-                watchBtn.className = 'bg-emerald-800/80 text-emerald-200 border border-emerald-500/50 font-semibold px-5 py-2.5 rounded-lg backdrop-blur-sm flex items-center space-x-2 transition hover:scale-105';
-            } else {
-                watchBtnText.innerText = 'Markér som set';
-                watchBtn.className = 'bg-brand-brownDark/80 hover:bg-brand-brownLight text-gray-200 border border-brand-brownLight/60 font-semibold px-5 py-2.5 rounded-lg backdrop-blur-sm flex items-center space-x-2 transition hover:scale-105';
+            if (watchBtn && watchBtnText) {
+                if (featured.status === 'watched') {
+                    watchBtnText.innerText = 'Set Sammen';
+                    watchBtn.className = 'bg-emerald-800/80 text-emerald-200 border border-emerald-500/50 font-semibold px-5 py-2.5 rounded-lg backdrop-blur-sm flex items-center space-x-2 transition hover:scale-105';
+                } else {
+                    watchBtnText.innerText = 'Markér som set';
+                    watchBtn.className = 'bg-brand-brownDark/80 hover:bg-brand-brownLight text-gray-200 border border-brand-brownLight/60 font-semibold px-5 py-2.5 rounded-lg backdrop-blur-sm flex items-center space-x-2 transition hover:scale-105';
+                }
+                
+                watchBtn.onclick = () => {
+                    toggleWatched(featured.id);
+                    setupHeroSpotlight();
+                };
             }
-            
-            watchBtn.onclick = () => {
-                toggleWatched(featured.id);
-                setupHeroSpotlight();
-            };
         }
 
         function updateStats() {
-            document.getElementById('statTotal').innerText = movies.length;
-            document.getElementById('statUnwatched').innerText = movies.filter(m => m.status === 'unwatched').length;
-            document.getElementById('statWatched').innerText = movies.filter(m => m.status === 'watched').length;
+            const statTotal = document.getElementById('statTotal');
+            const statUnwatched = document.getElementById('statUnwatched');
+            const statWatched = document.getElementById('statWatched');
+
+            if (statTotal) statTotal.innerText = movies.length;
+            if (statUnwatched) statUnwatched.innerText = movies.filter(m => m.status === 'unwatched').length;
+            if (statWatched) statWatched.innerText = movies.filter(m => m.status === 'watched').length;
         }
 
         function filterByStatus(status) {
@@ -569,7 +590,9 @@
         }
 
         function handleSearch() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const queryInput = document.getElementById('searchInput');
+            if (!queryInput) return;
+            const query = queryInput.value.toLowerCase().trim();
             const resultsSection = document.getElementById('searchResultsSection');
             const resultsGrid = document.getElementById('searchResultsGrid');
             const rowsContainer = document.getElementById('rowsContainer');
@@ -609,14 +632,18 @@
 
         function showModal(modalId) {
             const modal = document.getElementById(modalId);
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            if (modal) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            }
         }
 
         function closeModal(modalId) {
             const modal = document.getElementById(modalId);
-            modal.classList.add('opacity-0');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            if (modal) {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
         }
 
         function openDetailsModal(id) {
@@ -655,7 +682,7 @@
             if (!selectedMovieId) return;
             const num = parseInt(val);
             movies = movies.map(m => m.id === selectedMovieId ? { ...m, rating: num } : m);
-            saveMoviesToCloud();
+            saveMoviesToFirebase();
             renderApp();
         }
 
@@ -673,7 +700,7 @@
                 }
                 return m;
             });
-            saveMoviesToCloud();
+            saveMoviesToFirebase();
             renderApp();
         }
 
@@ -681,7 +708,7 @@
             if (!selectedMovieId) return;
             if (confirm('Vil I fjerne denne film fra jeres liste?')) {
                 movies = movies.filter(m => m.id !== selectedMovieId);
-                saveMoviesToCloud();
+                saveMoviesToFirebase();
                 renderApp();
                 closeModal('detailsModal');
             }
@@ -830,7 +857,7 @@
                 movies.unshift(newMovie);
             }
 
-            saveMoviesToCloud();
+            saveMoviesToFirebase();
             renderApp();
             closeModal('addMovieModal');
         }
