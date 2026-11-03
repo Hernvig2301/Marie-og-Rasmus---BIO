@@ -365,7 +365,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT WITH JSONBIN SYNC & INDSAT BIN ID + MASTER KEY -->
+    <!-- JAVASCRIPT WITH CORRECTED JSONBIN SYNC -->
     <script>
         const JSONBIN_BIN_ID = '6ae9b2a9ffd5d16053a1fbc0';   
         const JSONBIN_API_KEY = '$2a$10$5XQFeeXUU3Two2Y8e/jg2.jgXlqcw55ye/I2yDJOZGqBt9NDEoLai'; 
@@ -403,10 +403,9 @@
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    // Hvis skyen er tom, gemmer vi standardlisten derop første gang
                     if (!data.record || !data.record.movies || data.record.movies.length === 0) {
                         movies = DEFAULT_MOVIES;
-                        saveMoviesToCloud();
+                        await saveMoviesToCloud();
                     } else {
                         movies = data.record.movies;
                     }
@@ -422,13 +421,14 @@
 
         async function saveMoviesToCloud() {
             try {
+                // JSONbin kræver at dataen sendes i "record"-objektet ved PUT
                 await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Master-Key': JSONBIN_API_KEY
                     },
-                    body: JSON.stringify({ movies: movies })
+                    body: JSON.stringify({ record: { movies: movies } })
                 });
             } catch(e) {
                 console.error("Fejl ved synkronisering til skyen:", e);
