@@ -365,7 +365,7 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT WITH NEW BIN ID -->
+    <!-- JAVASCRIPT WITH FIXED AUTHENTICATED SAVE -->
     <script>
         const JSONBIN_BIN_ID = '6ae9b9ffffd5d16053a210c4';   
         const JSONBIN_API_KEY = '$2a$10$5XQFeeXUU3Two2Y8e/jg2.jgXlqcw55ye/I2yDJOZGqBt9NDEoLai'; 
@@ -423,7 +423,7 @@
 
         async function saveMoviesToCloud() {
             try {
-                await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+                const response = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -431,6 +431,9 @@
                     },
                     body: JSON.stringify({ movies: movies })
                 });
+                if (!response.ok) {
+                    console.error("Fejl ved lagring:", await response.text());
+                }
             } catch(e) {
                 console.error("Fejl ved synkronisering til skyen:", e);
             }
