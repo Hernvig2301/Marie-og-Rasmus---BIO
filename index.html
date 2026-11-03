@@ -365,9 +365,9 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT WITH CORRECTED JSONBIN SYNC -->
+    <!-- JAVASCRIPT WITH NEW BIN ID -->
     <script>
-        const JSONBIN_BIN_ID = '6ae9b2a9ffd5d16053a1fbc0';   
+        const JSONBIN_BIN_ID = '6ae9b9ffffd5d16053a210c4';   
         const JSONBIN_API_KEY = '$2a$10$5XQFeeXUU3Two2Y8e/jg2.jgXlqcw55ye/I2yDJOZGqBt9NDEoLai'; 
 
         const DEFAULT_MOVIES = [
@@ -377,7 +377,7 @@
             {"id":"1793687930840","title":"The Housemaid","category":"Thriller","duration":131,"rating":0,"status":"unwatched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSLTetO7hgSwhDhvQbyYiZ5_T0llosqARtXdB8wqqAQcA&s=10","description":"The Housemaid is a psychological thriller based on the 2022 bestselling novel by Freida McFadden, which was also adapted into a 2025 feature film directed by Paul Feig"},
             {"id":"afq-1","title":"Kvinden i Buret (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":89,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM9QPZsugbSp77nRXtmMd-zTeT0usDOe2XbGIW2fUO_Q&s=10","description":"Kriminalkommissær Carl Mørck og hans assistant Assad genoptager sagen om den forsvundne politiker Merete Lynggaard."},
             {"id":"afq-2","title":"Fasandræberne (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":119,"rating":0,"status":"watched","poster":"https://m.media-amazon.com/images/M/MV5BMTUwMTI0NDcxMF5BMl5BanBnXkFtZTgwNDAxNTI4MjE@._V1_FMjpg_UX1000_.jpg","description":"Et dobbeltdrab i 1994 fører Afdeling Q på sporet af en gruppe kostskoleelever fra samfundets topklasse."},
-            {"id":"afq-3","title":"Flaskepost fra P (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":112,"rating":0,"status":"watched","poster":"https://m.media-amazon.com/images/M/MV5BM2FjYTY4ZjQtMjBlYy00YzRlLWI5YWUtNmZjZTgyZTg2ZjRmXkEyXkFqcGc@._V1_.jpg","description":"En gammel flaskepost med et udvasket råb om hjælp finder vej til Afdeling Q."},
+            {"id":"afq-3","title":"Flaskepost fra P (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":112,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn71GBPI_ZrZSoJzYw5Po8w1xdtMxeJGkaWZ77jgcRPg&s=10","description":"En gammel flaskepost med et udvasket råb om hjælp finder vej til Afdeling Q."},
             {"id":"afq-4","title":"Journal 64 (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":119,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn71GBPI_ZrZSoJzYw5Po8w1xdtMxeJGkaWZ77jgcRPg&s=10","description":"Tre mumificerede lig findes i en københavnsk lejlighed siddende omkring et spisebord med en tom plads."},
             {"id":"afq-5","title":"Marco Effekten (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":125,"rating":0,"status":"watched","poster":"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu1he4AJ2XovjS2GBlkN-xwhi3A9gDETUb26GQMubHKw&s=10","description":"Den unge romadreng Marco arresteres ved den danske grænse med et pas tilhørende en forsvundet pædagog."},
             {"id":"afq-6","title":"Den Grænseløse (Afdeling Q)","category":"Danske Thrillers & Afdeling Q","duration":125,"rating":0,"status":"unwatched","poster":"https://d2gynsnnx1ixn5.cloudfront.net/2wmg5/images/282x422/film/188516/6d6269b0ac3ffc858f9a541a4221e4a0.jpg?w=282","description":"Carl Mørck sendes til Bornholm for at opklare en uopklaret sag om en ung kvinde dræbt syv år tidligere."},
@@ -403,11 +403,13 @@
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    if (!data.record || !data.record.movies || data.record.movies.length === 0) {
+                    const cloudMovies = data.record && data.record.movies ? data.record.movies : null;
+                    
+                    if (!cloudMovies || cloudMovies.length === 0) {
                         movies = DEFAULT_MOVIES;
                         await saveMoviesToCloud();
                     } else {
-                        movies = data.record.movies;
+                        movies = cloudMovies;
                     }
                 } else {
                     movies = DEFAULT_MOVIES;
@@ -421,14 +423,13 @@
 
         async function saveMoviesToCloud() {
             try {
-                // JSONbin kræver at dataen sendes i "record"-objektet ved PUT
                 await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-Master-Key': JSONBIN_API_KEY
                     },
-                    body: JSON.stringify({ record: { movies: movies } })
+                    body: JSON.stringify({ movies: movies })
                 });
             } catch(e) {
                 console.error("Fejl ved synkronisering til skyen:", e);
